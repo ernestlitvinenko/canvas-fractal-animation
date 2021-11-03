@@ -1,9 +1,5 @@
-const stroke_color = "#ddbea9";
-const screenWidth = window.innerWidth;
-const screenHeight = window.innerHeight;
-
 class Rectangle {
-  constructor(x, y, width, height, color = "#000000", weight = 1) {
+  constructor({ x, y, width, height, color = "#000000", weight = 1 }) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -41,35 +37,62 @@ class Rectangle {
     return this;
   }
 }
-
-const canvas = document.querySelector("canvas");
-
-// Change canvas width and height
-canvas.setAttribute("width", screenWidth);
-canvas.setAttribute("height", screenHeight);
-
-const ctx = canvas.getContext("2d");
-
-function createStrokeRectangles({
-  startPoint: [x, y] = [0, 0],
-  width = 10,
-  height = 10,
-  color = "black",
-}) {
-  return new Rectangle(x, y, width, height, color).buildStrokeRect({ ctx });
-}
-let [width, height] = [10, 10];
-r = createStrokeRectangles({
-  startPoint: [screenWidth / 2 - width / 2, screenHeight / 2 - height / 2],
-  color: "white",
-  width, height
-});
-let scale = 1
-function tick() {
-    canvas.style.transform = `scale(${scale})`
-    scale += 0.001
-    // requestAnimationFrame(tick)
-}
-
+// TODO Релизовать анимацию
 // TODO когда ширина одного квадрата будет на 90*2 больше другого создаем новый квадрат
-// requestAnimationFrame(tick)
+
+class CanvasHandler {
+  constructor(canvas = "canvas") {
+    //   Set canvas and canvas context
+    this.canvas = document.querySelector(canvas);
+    this.ctx = this.canvas.getContext("2d");
+
+    // Resize canvas
+    this.resizeCanvas.apply(this);
+  }
+
+  get settings() {
+    return {
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      defaultStrokeColor: "#ddbea9",
+      defaultStrokeWidth: 5,
+    };
+  }
+
+  resizeCanvas() {
+    //*  Function to set canvas sizesby default value
+    this.canvas.setAttribute("width", this.settings.screenWidth);
+    this.canvas.setAttribute("height", this.settings.screenHeight);
+    return;
+  }
+
+  wipeScreen() {
+    //   * Function to wipe screen
+    this.ctx.clearRect(0, 0, this.screenWidth, this.screenHeight);
+    return;
+  }
+
+  createStrokeRectangle({
+    startPoint: [x, y] = [undefined],
+    centerPos = false,
+    width,
+    height,
+    color = this.settings.defaultStrokeColor,
+  }) {
+    if (centerPos) {
+      return new Rectangle({
+        x: this.settings.screenWidth / 2 - width / 2,
+        y: this.settings.screenHeight / 2 - height / 2,
+        width,
+        height,
+        color,
+        weight: 5,
+      }).buildStrokeRect({ctx: this.ctx});
+    }
+    return new Rectangle({ x, y, width, height, color, weight: 5 }).buildStrokeRect({ctx: this.ctx});
+  }
+}
+const handler = new CanvasHandler();
+handler.wipeScreen();
+handler.createStrokeRectangle({centerPos: true, width: 50, height: 50})
+
